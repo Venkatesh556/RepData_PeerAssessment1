@@ -1,0 +1,56 @@
+
+```{r setglobaloptions, echo="TRUE"}
+opts_chunk$set(echo=TRUE)
+```
+
+```{r readfile}
+if(!file.exists('activity.csv')){
+    unzip('activity.zip')
+}
+data<-read.csv("activity.csv",sep=",")
+```
+
+```{r steps-taken-per-day}
+f<-aggregate(steps ~ date, data, sum)
+hist(f$steps, main="Histogram of steps taken per day")
+Mean<-mean(f$steps, na.rm=TRUE)
+Median<-median(f$steps, na.rm=TRUE)
+```
+
+The mean is: `r Mean` and the Meadian is: `r Median`  
+
+```{r maxsteps}
+a<-aggregate(steps ~ interval, data, mean)
+plot(a$interval,a$steps,xlab="5-minute interval",ylab="avg steps",type="l",main="Average daily activity pattern")
+m<-a[which.max(a$steps),]
+```
+
+The interval `r m$interval` has max avarage steps `r m$steps`  
+
+```{r newdataset}
+s<-sum(is.na(data$steps)) 
+newdata <- data
+newdata[which(is.na(newdata$steps)),]$steps <- min(data$steps,na.rm=TRUE)
+f<-aggregate(steps ~ date, newdata, sum)
+hist(f$steps,main="Histogram of steps taken per day using newdata set")
+newmean<-mean(f$steps)
+newmedian<-median(f$steps)
+```
+
+sum of NA's: `r s` 
+The oldmean is: `r Mean` and the oldMeadian is: `r Median`  
+NewMean: `r newmean` and newMedian: `r newmedian`  
+
+replaced NA's with min value of steps column  
+
+I see difference in mean is : 1412 and in median is: 370
+
+```{r Weekend-Weekday}
+weekdata<-subset(newdata, weekdays(as.Date(date,format="%Y-%m-%d")) %in% c("Monday","Tuesday","Wednesday","Thrusday","Friday"),select=c(steps,date,interval))
+weekenddata<-subset(newdata, weekdays(as.Date(date,format="%Y-%m-%d")) %in% c("Saturday","Sunday"),select=c(steps,date,interval))
+a<-aggregate(steps ~ interval, weekdata, mean)
+plot(a$interval,a$steps,xlab="5-minute interval",ylab="avg steps",type="l",main="Weekdata")
+a<-aggregate(steps ~ interval, weekenddata, mean)
+plot(a$interval,a$steps,xlab="5-minute interval",ylab="avg steps",type="l",main="Weekenddata")
+```
+
